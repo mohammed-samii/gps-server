@@ -12,7 +12,7 @@ app.get('/', (req, res) => {
 });
 
 // Endpoint to fetch the latest data
-app.get('https://gps-server-zeta.vercel.app/latest-data', (req, res) => {
+app.get('/latest-data', (req, res) => {
   res.json(latestData);
 });
 
