@@ -61,7 +61,7 @@
     // Fetch the latest AVL data from the Node.js server every 5 seconds
     setInterval(async () => {
       try {
-        const response = await fetch('https://gps-server-zeta.vercel.app/latest-data');
+        const response = await fetch('/latest-data');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
