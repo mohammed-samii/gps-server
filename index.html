@@ -61,7 +61,7 @@
     // Fetch the latest AVL data from the Node.js server every 5 seconds
     setInterval(async () => {
       try {
-        const response = await fetch('/latest-data');
+        const response = await fetch('https://34.134.224.170:3000/latest-data');
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
