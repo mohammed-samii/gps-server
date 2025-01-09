@@ -29,6 +29,8 @@
     <p><strong>Priority:</strong> <span id="priority">-</span></p>
     <p><strong>Latitude:</strong> <span id="latitude">-</span></p>
     <p><strong>Longitude:</strong> <span id="longitude">-</span></p>
+    <p><strong>Speed:</strong> <span id="speed">-</span></p>
+    <p><strong>Altitude:</strong> <span id="altitude">-</span></p>
   </div>
 
   <!-- Load the Google Maps API -->
@@ -91,7 +93,8 @@
             document.getElementById('priority').textContent = data.priority;
             document.getElementById('latitude').textContent = latitude.toFixed(6);
             document.getElementById('longitude').textContent = longitude.toFixed(6);
-
+            document.getElementById('speed').textContent = data.speed == null ? '0 km/h' : data.speed + ' km/h';
+            document.getElementById('altitude').textContent = data.altitude == null ? '0 m' : data.altitude + ' m';
             // Show data info box
             document.getElementById('data-info').style.display = 'block';
           } else {
