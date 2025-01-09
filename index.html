@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FMC920 AVL Data</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+    #data-info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 16px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="data-info">
+    <p><strong>Time:</strong> <span id="timestamp">-</span></p>
+    <p><strong>Priority:</strong> <span id="priority">-</span></p>
+    <p><strong>Latitude:</strong> <span id="latitude">-</span></p>
+    <p><strong>Longitude:</strong> <span id="longitude">-</span></p>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([51.505, -0.09], 13); // Initial coordinates for map view
+
+    // Set up the OpenStreetMap tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Create a marker to display the position
+    let marker = L.marker([51.505, -0.09]).addTo(map);
+
+    // Fetch the latest AVL data from the Node.js server
+    setInterval(async () => {
+        try {
+            const response = await fetch('/latest-data');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+
+            if (data.latitude && data.longitude) {
+                const { latitude, longitude, timestamp, priority } = data;
+
+                // Update the marker position on the map
+                marker.setLatLng([latitude, longitude]);
+                map.setView([latitude, longitude]);
+
+                // Format timestamp from Unix timestamp
+                const date = new Date(timestamp);
+                const formattedTime = date.toLocaleString();
+
+                // Display the data in the info box
+                document.getElementById('timestamp').textContent = formattedTime;
+                document.getElementById('priority').textContent = priority;
+                document.getElementById('latitude').textContent = latitude.toFixed(6);
+                document.getElementById('longitude').textContent = longitude.toFixed(6);
+
+                // Show data info box
+                document.getElementById('data-info').style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            document.getElementById('data-info').style.display = 'none';
+        }
+    }, 5000); // Update every 5 seconds
+  </script>
+</body>
+</html>
