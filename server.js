@@ -39,8 +39,28 @@ udpServer.on('message', (msg, rinfo) => {
     };
 
     console.log('Parsed Data:', latestData);
+
+    // Send a response back to the UDP client
+    const responseMessage = Buffer.from('Data received and processed successfully.');
+    udpServer.send(responseMessage, rinfo.port, rinfo.address, (err) => {
+      if (err) {
+        console.error('Error sending response:', err);
+      } else {
+        console.log('Response sent to client:', rinfo.address, rinfo.port);
+      }
+    });
   } catch (error) {
     console.error('Error parsing UDP message:', error);
+
+    // Send an error response back to the client
+    const errorMessage = Buffer.from('Error processing your data.');
+    udpServer.send(errorMessage, rinfo.port, rinfo.address, (err) => {
+      if (err) {
+        console.error('Error sending error response:', err);
+      } else {
+        console.log('Error response sent to client:', rinfo.address, rinfo.port);
+      }
+    });
   }
 });
 
