@@ -37,8 +37,8 @@
   </div>
 
   <!-- Load the Google Maps API -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCc-61a9_ziMx37xXon8uT1PJ2wReRdjK8&callback=initMap"
-    async defer></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCc-61a9_ziMx37xXon8uT1PJ2wReRdjK8
+  &callback=initMap" async defer></script>
 
   <script>
     let map;
@@ -63,7 +63,7 @@
     // Fetch AVL data from the server and update the map and info box
     async function fetchData() {
       try {
-        const response = await fetch('/latest-data');
+        const response = await fetch('http://gps-server123.ddns.net:3000/latest-data');
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
@@ -74,37 +74,36 @@
         if (data.location && data.location.length === 2) {
           const [lat, lng] = data.location.map(Number);
 
-          if (!isNaN(lat) && !isNaN(lng)) {
-            marker.setPosition(new google.maps.LatLng(lat, lng));
-            map.setCenter(new google.maps.LatLng(lat, lng));
+          if (!isNaN(latitude) && !isNaN(longitude)) {
+            console.log('Updating marker with lat:', latitude, 'lon:', longitude); // Log to see the coordinates
+
+            // Update the marker position on the map
+            marker.setPosition(new google.maps.LatLng(latitude, longitude));
+            map.setCenter(new google.maps.LatLng(latitude, longitude));
+
+            // Format timestamp from Unix timestamp
+            const timestamp = data.timestamp;
+            const date = new Date(timestamp);
+            const formattedTime = date.toLocaleString();
+
+            // Display the data in the info box
+            document.getElementById('timestamp').textContent = formattedTime;
+            document.getElementById('priority').textContent = data.priority;
+            document.getElementById('latitude').textContent = latitude.toFixed(6);
+            document.getElementById('longitude').textContent = longitude.toFixed(6);
+            document.getElementById('speed').textContent = data.speed == null ? '0 km/h' : data.speed + ' km/h';
+            document.getElementById('altitude').textContent = data.altitude == null ? '0 m' : data.altitude + ' m';
+            // Show data info box
+            document.getElementById('data-info').style.display = 'block';
+          } else {
+            console.error('Invalid latitude or longitude:', data); // Log invalid coordinates
           }
         }
-
-        // Update info box
-        document.getElementById('timestamp').textContent = data.timestamp
-          ? new Date(data.timestamp).toLocaleString()
-          : '-';
-        document.getElementById('priority').textContent = data.priority || '-';
-        document.getElementById('latitude').textContent =
-          data.location && data.location[0] ? data.location[0].toFixed(6) : '-';
-        document.getElementById('longitude').textContent =
-          data.location && data.location[1] ? data.location[1].toFixed(6) : '-';
-        document.getElementById('speed').textContent = `${data.speed || 0} km/h`;
-        document.getElementById('altitude').textContent = `${data.altitude || 0} m`;
-
-        // Show the info box
-        document.getElementById('data-info').style.display = 'block';
       } catch (error) {
         console.error('Error fetching data:', error);
-
-        // Hide the info box on error
         document.getElementById('data-info').style.display = 'none';
       }
-    }
-
-    // Fetch data every second
-    setInterval(fetchData, 5000);
-
+    }, 5000); // Update every 5 seconds
   </script>
 </body>
 
