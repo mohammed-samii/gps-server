@@ -59,7 +59,7 @@
     // Fetch AVL data from the server and update the map and info box
     async function fetchData() {
       try {
-        const response = await fetch('http://34.134.224.170:3000/latest-data');
+        const response = await fetch('https://34.134.224.170:3000/latest-data');
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
