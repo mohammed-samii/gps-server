@@ -1,65 +1,55 @@
 const dgram = require('dgram'); // For UDP communication
 const express = require('express');
-const app = express();
+const cors = require('cors'); // Import CORS
 const path = require('path');
 
+const app = express();
 let latestData = {}; // Store the latest parsed data
 
-// Serve the index.html directly from the root directory
-app.get('/', (req, res) => {
-  const filePath = path.join(__dirname, 'index.html');
-  res.sendFile(filePath);
-});
+// Enable CORS for your Vercel domain
+app.use(cors({
+  origin: 'https://gps-server-zeta.vercel.app',
+}));
 
-// Endpoint to fetch the latest data
+// Serve the frontend (if needed locally)
+app.use(express.static(path.join(__dirname)));
+
+// Endpoint to fetch the latest AVL data
 app.get('/latest-data', (req, res) => {
   res.json(latestData);
 });
 
-// Set up the UDP server
+// UDP server setup
 const udpServer = dgram.createSocket('udp4');
 
 udpServer.on('message', (msg, rinfo) => {
   console.log(`Received data from ${rinfo.address}:${rinfo.port}`);
 
   try {
-    // Parse the raw message to JSON
+    // Parse the incoming message as JSON
     const data = JSON.parse(msg.toString());
 
-    // Extract relevant fields from the JSON
-    const parsedData = {
-      timestamp: data.state.reported.ts || null,
-      priority: data.state.reported.pr || null,
-      location: data.state.reported.latlng ? data.state.reported.latlng.split(',') : [null, null],
-      altitude: data.state.reported.alt || null,
-      speed: data.state.reported.sp || null,
-      events: {
-        event_code: data.state.reported.ev || null,
-        input_1: data.state.reported['239'] || null,
-        input_2: data.state.reported['240'] || null,
-      },
-      diagnostics: {
-        engine_temp: data.state.reported['66'] || null,
-        rpm: data.state.reported['67'] || null,
-        odometer: data.state.reported['68'] || null,
-      },
+    // Extract and normalize fields for frontend consumption
+    latestData = {
+      timestamp: data.timestamp || Date.now(),
+      priority: data.priority || 0,
+      location: data.location || [null, null],
+      altitude: data.altitude || 0,
+      speed: data.speed || 0,
     };
 
-    // Save parsed data for frontend
-    latestData = parsedData;
-
-    console.log('Parsed AVL Data:', parsedData);
+    console.log('Parsed Data:', latestData);
   } catch (error) {
-    console.error('Error parsing data:', error);
+    console.error('Error parsing UDP message:', error);
   }
 });
 
-// Start listening for UDP packets
+// Bind the UDP server to a port
 udpServer.bind(5000, () => {
-  console.log('UDP Server is listening on port 5000');
+  console.log('UDP Server listening on port 5000');
 });
 
-// Start HTTP server
+// Start the HTTP server
 app.listen(3000, () => {
-  console.log('HTTP Server is running on port 3000');
+  console.log('HTTP Server running on port 3000');
 });
